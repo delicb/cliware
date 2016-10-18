@@ -1,8 +1,11 @@
 package cliware
 
 import (
+	"bytes"
 	"context"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,4 +170,23 @@ func (c *Chain) UseRequest(m func(req *http.Request) error) {
 // UseResponse add provided function as response middleware.
 func (c *Chain) UseResponse(m func(resp *http.Response, err error) error) {
 	c.Use(ResponseProcessor(m))
+}
+
+// EmptyRequest creates new empty instance of *http.Request.
+// It is good starting point for initial request instance for middleware chain.
+// In contrast to http.NewRequest, this function does not require any parameters.
+// Any value can be overridden by middlewares. Request method is set to GET,
+// just because it is sane default.
+func EmptyRequest() *http.Request {
+	req := &http.Request{
+		Method:     "GET",
+		URL:        &url.URL{},
+		Host:       "",
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Proto:      "HTTP/1.1",
+		Header:     make(http.Header),
+		Body:       ioutil.NopCloser(bytes.NewBuffer([]byte{})),
+	}
+	return req
 }

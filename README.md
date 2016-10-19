@@ -1,4 +1,6 @@
 # cliware
+[![GoDoc](http://godoc.org/github.com/delicb/cliware?status.png)](http://godoc.org/github.com/delicb/cliware)
+
 Cliware is minimal HTTP client middleware library.
 
 Main idea behind cliware is to make middleware concept usable for HTTP clients

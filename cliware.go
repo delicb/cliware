@@ -113,6 +113,7 @@ func NewChain(middlewares ...Middleware) *Chain {
 	}
 }
 
+// Copy creates new chain with all middlewares copied to it.
 func (c *Chain) Copy() *Chain {
 	middlewareCopy := make([]Middleware, len(c.middlewares))
 	copy(middlewareCopy, c.middlewares)

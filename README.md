@@ -9,6 +9,9 @@ that already exist in GoLang standard library, like
 [http.Handler](https://golang.org/pkg/net/http/#Handler), are defined for 
 HTTP clients. 
 
+## Install
+Run `go get go.delic.rs/cliware` in terminal.
+
 ## Scope
 Scope of this library is pretty small. It only defines required types (for
 handler and middleware) and mechanism how they are chained. That is it.

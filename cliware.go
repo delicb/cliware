@@ -47,7 +47,7 @@ type Middleware interface {
 // MiddlewareFunc is function variant of Middleware interface.
 type MiddlewareFunc func(handler Handler) Handler
 
-// Exec is implementation of Middlware interface.
+// Exec is implementation of Middleware interface.
 func (mf MiddlewareFunc) Exec(handler Handler) Handler {
 	return mf(handler)
 }
@@ -109,6 +109,15 @@ type Chain struct {
 func NewChain(middlewares ...Middleware) *Chain {
 	return &Chain{
 		middlewares: middlewares,
+		parent:      nil,
+	}
+}
+
+func (c *Chain) Copy() *Chain {
+	middlewareCopy := make([]Middleware, len(c.middlewares))
+	copy(middlewareCopy, c.middlewares)
+	return &Chain{
+		middlewares: middlewareCopy,
 		parent:      nil,
 	}
 }

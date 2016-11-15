@@ -7,7 +7,9 @@ import (
 
 	"errors"
 
-	m "github.com/delicb/cliware"
+	"reflect"
+
+	m "go.delic.rs/cliware"
 )
 
 func TestRequestHandlerFunc(t *testing.T) {
@@ -225,6 +227,44 @@ func TestResponseProcessorWithError(t *testing.T) {
 	}
 	if !*handlerCalled {
 		t.Error("Handler not called.")
+	}
+}
+
+func TestCopy(t *testing.T) {
+	processor := m.RequestProcessor(func(req *http.Request) error {
+		return nil
+	})
+	originalProcessor := reflect.ValueOf(processor)
+	chain := m.NewChain(processor).Copy()
+
+	if len(chain.Middlewares()) != 1 {
+		t.Fatal("Wrong number of middlewares in copied chain.")
+	}
+	copiedProcessor := reflect.ValueOf(chain.Middlewares()[0])
+	if originalProcessor != copiedProcessor {
+		t.Error("Got wrong middleware in copied chain.")
+	}
+}
+
+func TestEmptyRequest(t *testing.T) {
+	req := m.EmptyRequest()
+	if req.Method != "GET" {
+		t.Errorf("Empty request method wrong. Got: %s, expected: GET", req.Method)
+	}
+	if req.URL.Host != "" || req.URL.Scheme != "" || req.URL.Path != "" {
+		t.Errorf("Empty request URL wrong. Got: %s, expected: <empty>", req.URL)
+	}
+	if req.Host != "" {
+		t.Errorf("Empty request host wrong. Got %s, expected: <empty>", req.Host)
+	}
+	if req.ProtoMajor != 1 {
+		t.Errorf("Empty request ProtoMajor wrong. Got: %d, exptected: 1", req.ProtoMajor)
+	}
+	if req.ProtoMinor != 1 {
+		t.Errorf("Empty request ProtoMinor wrong. Got: %d, exptected: 1", req.ProtoMajor)
+	}
+	if req.Proto != "HTTP/1.1" {
+		t.Errorf("Empty request Proto wrong. Got: %s, exptected HTTP/1.1", req.Proto)
 	}
 }
 

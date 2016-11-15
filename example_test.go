@@ -12,7 +12,7 @@ import (
 
 	"context"
 
-	"github.com/delicb/cliware"
+	"go.delic.rs/cliware"
 )
 
 func Example() {

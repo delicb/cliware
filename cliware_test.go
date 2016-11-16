@@ -19,7 +19,10 @@ func TestRequestHandlerFunc(t *testing.T) {
 		return nil, nil
 	}
 	var handler m.Handler = m.HandlerFunc(handlerFunc)
-	handler.Handle(nil, nil)
+	_, err := handler.Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !called {
 		t.Error("Expected request handler function to be called.")
 	}
@@ -81,7 +84,10 @@ func TestUseRequest(t *testing.T) {
 		return nil
 	})
 	handler, handlerCalled := createHandler()
-	chain.Exec(handler).Handle(nil, templateReq)
+	_, err := chain.Exec(handler).Handle(nil, templateReq)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !called {
 		t.Error("Request middleware not called.")
 	}
@@ -101,7 +107,10 @@ func TestUseResponse(t *testing.T) {
 		return nil
 	})
 	handler, handlerCalled := createHandler()
-	chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !called {
 		t.Error("Response middleware not called.")
 	}
@@ -115,7 +124,10 @@ func TestMiddlewareCalled(t *testing.T) {
 	m2, m2Called := createMiddleware()
 	handler, handlerCalled := createHandler()
 	chain := m.NewChain(m1, m2)
-	chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !*m1Called {
 		t.Error("m1 middleware not called.")
 	}
@@ -134,7 +146,10 @@ func TestMiddlewareCalledWithParent(t *testing.T) {
 
 	chain := m.NewChain(m1)
 	childChain := chain.ChildChain(m2)
-	childChain.Exec(handler).Handle(nil, nil)
+	_, err := childChain.Exec(handler).Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !*m1Called {
 		t.Error("m1 middleware not called.")
 	}
@@ -162,7 +177,10 @@ func TestRequestProcessorNoError(t *testing.T) {
 	})
 	chain := m.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !processorCalled {
 		t.Error("Request processor not called.")
 	}
@@ -200,7 +218,10 @@ func TestResponseProcessorNoError(t *testing.T) {
 	})
 	chain := m.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
 	if !processorCalled {
 		t.Error("Response processor not called.")
 	}

@@ -4,3 +4,6 @@ go:
   - 1.7
 
 go_import_path: go.delic.rs/cliware
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

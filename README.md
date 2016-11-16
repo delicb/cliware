@@ -1,4 +1,5 @@
 # cliware
+[![Go Report Card](https://goreportcard.com/badge/github.com/delicb/cliware)](https://goreportcard.com/report/github.com/delicb/cliware)
 [![Build Status](https://travis-ci.org/delicb/cliware.svg?branch=master)](https://travis-ci.org/delicb/cliware)
 [![codecov](https://codecov.io/gh/delicb/cliware/branch/master/graph/badge.svg)](https://codecov.io/gh/delicb/cliware)
 [![GoDoc](http://godoc.org/github.com/delicb/cliware?status.png)](http://godoc.org/github.com/delicb/cliware)

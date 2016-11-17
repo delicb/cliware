@@ -73,13 +73,13 @@ func Example() {
 	traceMiddleware := cliware.MiddlewareFunc(func(next cliware.Handler) cliware.Handler {
 		return cliware.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
 			// do anything before request
-			fmt.Printf("\n*** Before sending request.\n")
+			fmt.Print("\n*** Before sending request.\n")
 
 			// call next middleware
 			resp, err = next.Handle(ctx, req)
 
 			// do anything after request
-			fmt.Printf("\n*** After sending request.\n")
+			fmt.Print("\n*** After sending request.\n")
 
 			// return result
 			return resp, err

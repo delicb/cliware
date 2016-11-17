@@ -82,7 +82,7 @@ and ResponseProcessor types. For example, if you want to modify request by
 setting HTTP method to it, you can write simple middleware like this:
 
 ```go
-func Query(method string) cliware.Middleware {
+func Method(method string) cliware.Middleware {
 	return cliware.RequestProcessor(func(req *http.Request) error {
 		req.Method = method
 		return nil

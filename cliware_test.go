@@ -251,6 +251,26 @@ func TestResponseProcessorWithError(t *testing.T) {
 	}
 }
 
+func TestContextProcessor_Exec(t *testing.T) {
+	var processorCalled bool
+	processor := m.ContextProcessor(func(ctx context.Context) context.Context {
+		processorCalled = true
+		return ctx
+	})
+	chain := m.NewChain(processor)
+	handler, handlerCalled := createHandler()
+	_, err := chain.Exec(handler).Handle(nil, nil)
+	if err != nil {
+		t.Error("Handle returned error: ", err)
+	}
+	if !processorCalled {
+		t.Error("Context processor not called.")
+	}
+	if !*handlerCalled {
+		t.Error("Handler was not called.")
+	}
+}
+
 func TestCopy(t *testing.T) {
 	processor := m.RequestProcessor(func(req *http.Request) error {
 		return nil

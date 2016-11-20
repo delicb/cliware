@@ -95,6 +95,19 @@ func (rp ResponseProcessor) Exec(handler Handler) Handler {
 	})
 }
 
+// ContextProcessor is function for managing request context.
+// It is intended as for of simple middleware for middlewares that only
+// need to modify context before sending request.
+type ContextProcessor func(ctx context.Context) context.Context
+
+// Exec is implementation of Middleware interface.
+func (cp ContextProcessor) Exec(handler Handler) Handler {
+	return HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+		ctx = cp(ctx)
+		return handler.Handle(ctx, req)
+	})
+}
+
 // Chain is Middleware implementation capable of executing multiple
 // middlewares. On top of that, chain is aware of its parent middleware and
 // executes it during its own execution.

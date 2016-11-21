@@ -180,6 +180,11 @@ func (c *Chain) Use(m Middleware) {
 	c.middlewares = append(c.middlewares, m)
 }
 
+// UseAll adds all provided middlewares to current middleware chain.
+func (c *Chain) UseAll(m ...Middleware) {
+	c.middlewares = append(c.middlewares, m...)
+}
+
 // UseFunc adds provided function to current middleware chain.
 func (c *Chain) UseFunc(m func(handler Handler) Handler) {
 	c.middlewares = append(c.middlewares, MiddlewareFunc(m))

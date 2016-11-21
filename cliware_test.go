@@ -63,6 +63,17 @@ func TestMiddlewareUse(t *testing.T) {
 	}
 }
 
+func TestMiddlewareUseAll(t *testing.T) {
+	m1, _ := createMiddleware()
+	m2, _ := createMiddleware()
+	chain := m.NewChain()
+
+	chain.UseAll(m1, m2)
+	if len(chain.Middlewares()) != 2 {
+		t.Error("Expected 2 middlewares in chain, found: ", len(chain.Middlewares()))
+	}
+}
+
 func TestMiddlewareUseFunc(t *testing.T) {
 	chain := m.NewChain()
 	chain.UseFunc(func(next m.Handler) m.Handler {

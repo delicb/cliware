@@ -176,12 +176,7 @@ func (c *Chain) Exec(handler Handler) Handler {
 }
 
 // Use adds provided middleware to current middleware chain.
-func (c *Chain) Use(m Middleware) {
-	c.middlewares = append(c.middlewares, m)
-}
-
-// UseAll adds all provided middlewares to current middleware chain.
-func (c *Chain) UseAll(m ...Middleware) {
+func (c *Chain) Use(m ...Middleware) {
 	c.middlewares = append(c.middlewares, m...)
 }
 

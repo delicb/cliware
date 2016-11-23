@@ -44,7 +44,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/delicb/cliware"
+	"go.delic.rs/cliware"
 )
 
 func RequestLog(name, value string) cliware.Middleware {

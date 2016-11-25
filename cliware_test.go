@@ -2,14 +2,12 @@ package cliware_test
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 
-	"errors"
-
-	"reflect"
-
-	m "go.delic.rs/cliware"
+	c "go.delic.rs/cliware"
 )
 
 func TestRequestHandlerFunc(t *testing.T) {
@@ -18,7 +16,7 @@ func TestRequestHandlerFunc(t *testing.T) {
 		called = true
 		return nil, nil
 	}
-	var handler m.Handler = m.HandlerFunc(handlerFunc)
+	var handler c.Handler = c.HandlerFunc(handlerFunc)
 	_, err := handler.Handle(nil, nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
@@ -30,11 +28,11 @@ func TestRequestHandlerFunc(t *testing.T) {
 
 func TestMiddlewareFunc(t *testing.T) {
 	var called bool
-	middlewareFunc := func(next m.Handler) m.Handler {
+	middlewareFunc := func(next c.Handler) c.Handler {
 		called = true
 		return nil
 	}
-	var middleware m.Middleware = m.MiddlewareFunc(middlewareFunc)
+	var middleware c.Middleware = c.MiddlewareFunc(middlewareFunc)
 	middleware.Exec(nil)
 	if !called {
 		t.Error("Expected middleware func to be called.")
@@ -45,7 +43,7 @@ func TestChainCreation(t *testing.T) {
 	m1, _ := createMiddleware()
 	m2, _ := createMiddleware()
 
-	chain := m.NewChain(m1, m2)
+	chain := c.NewChain(m1, m2)
 	if len(chain.Middlewares()) != 2 {
 		t.Error("Expected 2 middlewares in chain, found: ", len(chain.Middlewares()))
 	}
@@ -54,7 +52,7 @@ func TestChainCreation(t *testing.T) {
 func TestMiddlewareUse(t *testing.T) {
 	m1, _ := createMiddleware()
 	m2, _ := createMiddleware()
-	chain := m.NewChain()
+	chain := c.NewChain()
 
 	chain.Use(m1)
 	chain.Use(m2)
@@ -66,7 +64,7 @@ func TestMiddlewareUse(t *testing.T) {
 func TestMiddlewareUseMultiple(t *testing.T) {
 	m1, _ := createMiddleware()
 	m2, _ := createMiddleware()
-	chain := m.NewChain()
+	chain := c.NewChain()
 
 	chain.Use(m1, m2)
 	if len(chain.Middlewares()) != 2 {
@@ -75,8 +73,8 @@ func TestMiddlewareUseMultiple(t *testing.T) {
 }
 
 func TestMiddlewareUseFunc(t *testing.T) {
-	chain := m.NewChain()
-	chain.UseFunc(func(next m.Handler) m.Handler {
+	chain := c.NewChain()
+	chain.UseFunc(func(next c.Handler) c.Handler {
 		return nil
 	})
 	if len(chain.Middlewares()) != 1 {
@@ -85,7 +83,7 @@ func TestMiddlewareUseFunc(t *testing.T) {
 }
 
 func TestUseRequest(t *testing.T) {
-	chain := m.NewChain()
+	chain := c.NewChain()
 	var called bool
 	var validRequest bool
 	templateReq, _ := http.NewRequest("GET", "http://localhost", nil)
@@ -111,7 +109,7 @@ func TestUseRequest(t *testing.T) {
 }
 
 func TestUseResponse(t *testing.T) {
-	chain := m.NewChain()
+	chain := c.NewChain()
 	var called bool
 	chain.UseResponse(func(resp *http.Response, err error) error {
 		called = true
@@ -134,7 +132,7 @@ func TestMiddlewareCalled(t *testing.T) {
 	m1, m1Called := createMiddleware()
 	m2, m2Called := createMiddleware()
 	handler, handlerCalled := createHandler()
-	chain := m.NewChain(m1, m2)
+	chain := c.NewChain(m1, m2)
 	_, err := chain.Exec(handler).Handle(nil, nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
@@ -155,7 +153,7 @@ func TestMiddlewareCalledWithParent(t *testing.T) {
 	m2, m2Called := createMiddleware()
 	handler, handlerCalled := createHandler()
 
-	chain := m.NewChain(m1)
+	chain := c.NewChain(m1)
 	childChain := chain.ChildChain(m2)
 	_, err := childChain.Exec(handler).Handle(nil, nil)
 	if err != nil {
@@ -173,7 +171,7 @@ func TestMiddlewareCalledWithParent(t *testing.T) {
 }
 
 func TestGetParent(t *testing.T) {
-	chain := m.NewChain()
+	chain := c.NewChain()
 	childChain := chain.ChildChain()
 	if childChain.Parent() != chain {
 		t.Error("Parent middleware not set properly.")
@@ -182,11 +180,11 @@ func TestGetParent(t *testing.T) {
 
 func TestRequestProcessorNoError(t *testing.T) {
 	var processorCalled bool
-	processor := m.RequestProcessor(func(req *http.Request) error {
+	processor := c.RequestProcessor(func(req *http.Request) error {
 		processorCalled = true
 		return nil
 	})
-	chain := m.NewChain(processor)
+	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
 	_, err := chain.Exec(handler).Handle(nil, nil)
 	if err != nil {
@@ -203,11 +201,11 @@ func TestRequestProcessorNoError(t *testing.T) {
 func TestRequestProcessorWithError(t *testing.T) {
 	var processorCalled bool
 	myErr := errors.New("custom error")
-	processor := m.RequestProcessor(func(req *http.Request) error {
+	processor := c.RequestProcessor(func(req *http.Request) error {
 		processorCalled = true
 		return myErr
 	})
-	chain := m.NewChain(processor)
+	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
 	_, err := chain.Exec(handler).Handle(nil, nil)
 	if err != myErr {
@@ -223,11 +221,11 @@ func TestRequestProcessorWithError(t *testing.T) {
 
 func TestResponseProcessorNoError(t *testing.T) {
 	var processorCalled bool
-	processor := m.ResponseProcessor(func(resp *http.Response, err error) error {
+	processor := c.ResponseProcessor(func(resp *http.Response, err error) error {
 		processorCalled = true
 		return nil
 	})
-	chain := m.NewChain(processor)
+	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
 	_, err := chain.Exec(handler).Handle(nil, nil)
 	if err != nil {
@@ -244,11 +242,11 @@ func TestResponseProcessorNoError(t *testing.T) {
 func TestResponseProcessorWithError(t *testing.T) {
 	var processorCalled bool
 	myErr := errors.New("custom error")
-	processor := m.ResponseProcessor(func(resp *http.Response, err error) error {
+	processor := c.ResponseProcessor(func(resp *http.Response, err error) error {
 		processorCalled = true
 		return myErr
 	})
-	chain := m.NewChain(processor)
+	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
 	_, err := chain.Exec(handler).Handle(nil, nil)
 	if err != myErr {
@@ -264,11 +262,11 @@ func TestResponseProcessorWithError(t *testing.T) {
 
 func TestContextProcessor_Exec(t *testing.T) {
 	var processorCalled bool
-	processor := m.ContextProcessor(func(ctx context.Context) context.Context {
+	processor := c.ContextProcessor(func(ctx context.Context) context.Context {
 		processorCalled = true
 		return ctx
 	})
-	chain := m.NewChain(processor)
+	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
 	_, err := chain.Exec(handler).Handle(nil, nil)
 	if err != nil {
@@ -283,11 +281,11 @@ func TestContextProcessor_Exec(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	processor := m.RequestProcessor(func(req *http.Request) error {
+	processor := c.RequestProcessor(func(req *http.Request) error {
 		return nil
 	})
 	originalProcessor := reflect.ValueOf(processor)
-	chain := m.NewChain(processor).Copy()
+	chain := c.NewChain(processor).Copy()
 
 	if len(chain.Middlewares()) != 1 {
 		t.Fatal("Wrong number of middlewares in copied chain.")
@@ -299,7 +297,7 @@ func TestCopy(t *testing.T) {
 }
 
 func TestEmptyRequest(t *testing.T) {
-	req := m.EmptyRequest()
+	req := c.EmptyRequest()
 	if req.Method != "GET" {
 		t.Errorf("Empty request method wrong. Got: %s, expected: GET", req.Method)
 	}
@@ -310,30 +308,30 @@ func TestEmptyRequest(t *testing.T) {
 		t.Errorf("Empty request host wrong. Got %s, expected: <empty>", req.Host)
 	}
 	if req.ProtoMajor != 1 {
-		t.Errorf("Empty request ProtoMajor wrong. Got: %d, exptected: 1", req.ProtoMajor)
+		t.Errorf("Empty request ProtoMajor wrong. Got: %d, expected: 1", req.ProtoMajor)
 	}
 	if req.ProtoMinor != 1 {
-		t.Errorf("Empty request ProtoMinor wrong. Got: %d, exptected: 1", req.ProtoMajor)
+		t.Errorf("Empty request ProtoMinor wrong. Got: %d, expected: 1", req.ProtoMajor)
 	}
 	if req.Proto != "HTTP/1.1" {
-		t.Errorf("Empty request Proto wrong. Got: %s, exptected HTTP/1.1", req.Proto)
+		t.Errorf("Empty request Proto wrong. Got: %s, expected HTTP/1.1", req.Proto)
 	}
 }
 
-func createMiddleware() (middleware m.Middleware, called *bool) {
+func createMiddleware() (middleware c.Middleware, called *bool) {
 	var middlewareCalled bool
-	middleware = m.MiddlewareFunc(func(next m.Handler) m.Handler {
+	middleware = c.MiddlewareFunc(func(next c.Handler) c.Handler {
 		middlewareCalled = true
-		return m.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+		return c.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
 			return next.Handle(ctx, req)
 		})
 	})
 	return middleware, &middlewareCalled
 }
 
-func createHandler() (handler m.Handler, called *bool) {
+func createHandler() (handler c.Handler, called *bool) {
 	var handlerCalled bool
-	handler = m.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+	handler = c.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
 		handlerCalled = true
 		return nil, nil
 	})

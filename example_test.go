@@ -1,26 +1,26 @@
 package cliware_test
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"strings"
 
-	"context"
-
-	"go.delic.rs/cliware"
+	c "go.delic.rs/cliware"
 )
 
-func Example() {
-	// start test http server
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+var server *httptest.Server
+
+// startServer starts dummy example server that will be used to demonstrate
+// how middlewares work.
+func startServer() {
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// print some headers
 		fmt.Println("User-Agent: ", r.Header.Get("User-Agent"))
-		fmt.Println("Content-Type: ", r.Header.Get("Content-Type"))
 		fmt.Println("Custom-Header: ", r.Header.Get("X-Custom-Header"))
 
 		// dump body to stdout
@@ -31,84 +31,102 @@ func Example() {
 		w.WriteHeader(200)
 		w.Write([]byte("My shiny server response"))
 	}))
+}
 
-	// define middleware that will set URL to request - endpoint to send request to
-	urlMiddleware := cliware.RequestProcessor(func(req *http.Request) error {
+// stopServer stops testing server
+func stopServer() {
+	server.Close()
+}
+
+// serverURL sets request URL to match URL of provided test server.
+// This is example of middleware that modifies request before sending it.
+// It uses utility function RequestProcessor.
+func serverURL(server *httptest.Server) c.Middleware {
+	return c.RequestProcessor(func(r *http.Request) error {
 		u, err := url.Parse(server.URL)
 		if err != nil {
 			return err
 		}
-		req.URL = u
+		r.URL = u
 		return nil
 	})
+}
 
-	// middleware that our headers to request
-	headersMiddleware := cliware.RequestProcessor(func(req *http.Request) error {
-		req.Header.Set("User-Agent", "Cliware")
-		req.Header.Set("X-Custom-Header", "whatever")
+// header adds header with provided name and value to request.
+// This is another example of middleware that modifies request before sending
+// it.
+func header(name, value string) c.Middleware {
+	return c.RequestProcessor(func(r *http.Request) error {
+		r.Header.Set(name, value)
 		return nil
 	})
+}
 
-	// middleware for setting body to request. Also, it sets Content-Type header.
-	bodyMiddleware := cliware.RequestProcessor(func(req *http.Request) error {
-		req.Body = ioutil.NopCloser(strings.NewReader("request data"))
-		req.Header.Set("Content-Type", "application/text")
-		return nil
-	})
-
-	// middleware for checking for error and printing response to StdOut
-	responseMiddleware := cliware.ResponseProcessor(func(resp *http.Response, err error) error {
+// bodyToStdout reads response body and copies it to standard output.
+// This is example of middleware that inspects response and does something
+// with returned body.
+func bodyToStdout() c.Middleware {
+	return c.ResponseProcessor(func(resp *http.Response, err error) error {
 		if err != nil {
-			fmt.Println("Got error:", err)
+			log.Println("Got error:", err)
 			return err
 		}
 		defer resp.Body.Close()
 		fmt.Println()
 		fmt.Println("Got response:")
-		io.Copy(os.Stdout, resp.Body)
-		return nil
+		_, err = io.Copy(os.Stdout, resp.Body)
+		return err
 	})
+}
 
-	// example of more complex middleware that can track entire request
-	traceMiddleware := cliware.MiddlewareFunc(func(next cliware.Handler) cliware.Handler {
-		return cliware.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
-			// do anything before request
-			fmt.Print("\n*** Before sending request.\n")
+// trace writes something to standard output before and after request has been sent.
+// This is example of middleware without utility functions that does something
+// both before and after request has been sent.
+func trace(next c.Handler) c.Handler {
+	return c.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+		// do anything before request
+		fmt.Println("*** Before sending request.")
 
-			// call next middleware
-			resp, err = next.Handle(ctx, req)
+		// call next middleware
+		resp, err = next.Handle(ctx, req)
 
-			// do anything after request
-			fmt.Print("\n*** After sending request.\n")
+		// do anything after request
+		fmt.Println("*** After sending request.")
 
-			// return result
-			return resp, err
-		})
+		// return result
+		return resp, err
 	})
+}
 
-	// final handler - one that will really send request
-	finalHandler := cliware.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
-		r := req.WithContext(ctx)
-		return http.DefaultClient.Do(r)
-	})
+// sender does actual request sending using htt.Client.
+// this is final handler that has to be called and it has to be passed to
+// chain Exec method.
+func sender(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+	req = req.WithContext(ctx)
+	return http.DefaultClient.Do(req)
+}
 
-	// middlewares will be applied in oder defined here
-	chain := cliware.NewChain(urlMiddleware, headersMiddleware, bodyMiddleware, responseMiddleware)
-	// other way to add middleware is by using Use* method
-	chain.Use(traceMiddleware)
+func Example() {
+	startServer()
+	defer stopServer()
+
+	// middlewares will be applied in order defined here
+	chain := c.NewChain(
+		serverURL(server),
+		header("User-Agent", "Cliware"),
+		header("X-Custom-Header", "whatever"),
+		bodyToStdout(),
+	)
+	// other way to add middlewares is by using Use* method
+	chain.UseFunc(trace)
 	// execute chain and final middleware
-	chain.Exec(finalHandler).Handle(context.Background(), cliware.EmptyRequest())
-
-	server.Close()
-
+	chain.Exec(c.HandlerFunc(sender)).Handle(context.Background(), c.EmptyRequest())
 	// Output:
 	// *** Before sending request.
 	// User-Agent:  Cliware
-	// Content-Type:  application/text
 	// Custom-Header:  whatever
-	// request data
 	// *** After sending request.
-
+	//
 	// Got response:
 	// My shiny server response
 }

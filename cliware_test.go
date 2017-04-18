@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	c "go.delic.rs/cliware"
+	c "github.com/delicb/cliware"
 )
 
 func TestRequestHandlerFunc(t *testing.T) {

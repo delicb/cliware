@@ -7,7 +7,7 @@ import (
 
 	"net/url"
 
-	c "go.delic.rs/cliware"
+	c "github.com/delicb/cliware"
 )
 
 // HTTPError is struct holding information about HTTP response that went wrong.

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	c "go.delic.rs/cliware"
+	c "github.com/delicb/cliware"
 )
 
 // basicAuth is simple middleware that modifies request by adding basic authentication

@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"os"
 
-	c "go.delic.rs/cliware"
+	c "github.com/delicb/cliware"
 )
 
 var server *httptest.Server

@@ -4,7 +4,7 @@ go:
   - 1.8
   - 1.7
 
-go_import_path: go.delic.rs/cliware
+go_import_path: github.com/delicb/cliware
 
 script:
   - go test -race -coverprofile=coverage.txt -covermode=atomic

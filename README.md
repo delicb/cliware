@@ -17,7 +17,7 @@ common server handlers. Idea behind this library is to make it possible for
 others to write client middlewares and compose them to create HTTP clients.
 
 ## Install
-Run `go get go.delic.rs/cliware` in terminal.
+Run `go get github.com/delicb/cliware` in terminal.
 
 ## Usage
 Two main types in `cliware` are `Handler` and `Middleware`. They are both 

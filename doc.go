@@ -12,4 +12,4 @@
 // same idea. It provides type definition and some useful helper stuff around
 // it (like ability to chain middlewares) in hope that other developer will
 // catch up and write useful middlewares for everyone to use.
-package cliware // import "go.delic.rs/cliware"
+package cliware

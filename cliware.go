@@ -96,7 +96,7 @@ func (rp ResponseProcessor) Exec(handler Handler) Handler {
 }
 
 // ContextProcessor is function for managing request context.
-// It is intended as for of simple middleware for middlewares that only
+// It is intended as form of simple middleware for middlewares that only
 // need to modify context before sending request.
 type ContextProcessor func(ctx context.Context) context.Context
 

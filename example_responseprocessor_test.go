@@ -1,7 +1,6 @@
 package cliware_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -47,7 +46,7 @@ func statusCodeToError() c.Middleware {
 
 // notFoundResponse is helper method that always returns HTTP response with
 // 404 Not Found status.
-func notFoundResponse(ctx context.Context, req *http.Request) (*http.Response, error) {
+func notFoundResponse(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		Status:     http.StatusText(http.StatusNotFound),
 		StatusCode: http.StatusNotFound,
@@ -61,6 +60,6 @@ func notFoundResponse(ctx context.Context, req *http.Request) (*http.Response, e
 }
 
 func ExampleResponseProcessor() {
-	_, err := statusCodeToError().Exec(c.HandlerFunc(notFoundResponse)).Handle(nil, nil)
+	_, err := statusCodeToError().Exec(c.HandlerFunc(notFoundResponse)).Handle(nil)
 	fmt.Println(err)
 }

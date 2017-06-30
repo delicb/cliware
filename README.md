@@ -2,7 +2,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/delicb/cliware)](https://goreportcard.com/report/github.com/delicb/cliware)
 [![Build Status](https://travis-ci.org/delicb/cliware.svg?branch=master)](https://travis-ci.org/delicb/cliware)
 [![codecov](https://codecov.io/gh/delicb/cliware/branch/master/graph/badge.svg)](https://codecov.io/gh/delicb/cliware)
-![status](https://img.shields.io/badge/status-stable-brightgreen.svg)
+![status](https://img.shields.io/badge/status-beta-orange.svg)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/delicb/cliware)
 
 Cliware - middlewares from clients.
@@ -89,9 +89,11 @@ No http client implementation (also writing one, check out
 [GWC](https://github.com/delicb/gwc)). 
 
 ## Dependencies
-Cliware depends only on GoLang standard library. 
-It requires GoLang 1.7+, because it uses `context` package. Earlier versions
-might be possible and I might add support later.
+No dependencies beyond `GoLang` standard library.
+
+Currently, cliware requires `GoLang 1.7` to work, but I will not constrain from 
+using new language features and new versions of `GoLang` come out. Therefor, 
+make sure to vendor this library if you intend to use it in production.
 
 ## Contributing
 Most appreciated contributions would be written middlewares that use Cliware.

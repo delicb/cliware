@@ -24,16 +24,26 @@ Two main types in `cliware` are `Handler` and `Middleware`. They are both
 interfaces with some helper around them. 
 
 ### Handler
+`Handler` defines `Handle` method whose job is to take request (with context
+already attached to it) which is instance of `*http.Request` and return 
+`*http.Response` with potential error (just like `http.Client.Do` does).
+
+
+
 `Handler` defines `Handle` method whose job is to take context in which it is
 being executed and instance of `*http.Request` and return `*http.Response` (
 with optional error). That is it. It is pretty similar to what `*http.Client.Do`
 method does, except it does not accept context as first parameter.
 
 At least one Handler has to exist and that is one that will send request over
-network. Simple implementation can look like this:
+network. Most simple implementation would be just using `http.Client.Do` method.
+If additional work has to be done, something like this should be implemented:
 ```go
-func finalHandler(ctx *context.Context, req *http.Request) (resp *http.Response, err error) {
-    return http.DefaultClient.Do(req.WithContext(ctx))
+func finalHandler(req *http.Request) (resp *http.Response, err error) {
+    // something before sending request
+    resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+    // something after sending request
+    return resp, err
 }
 ```
 
@@ -42,7 +52,7 @@ func finalHandler(ctx *context.Context, req *http.Request) (resp *http.Response,
 `Exec` and it accepts next `Handler` in to be called and returns new `Handler`.
 
 Middlewares can wrap handlers based on some parameters, do some stuff before and
-after next handler, etc, modify request, inspect response, etc. Middleware HAS TO
+after next handler, modify request, inspect response, etc. Middleware HAS TO
 call next handler that was provided to `Exec` or else entire chain will stop
 executing.
 

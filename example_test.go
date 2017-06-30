@@ -1,7 +1,6 @@
 package cliware_test
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -99,12 +98,12 @@ func bodyToStdout() c.Middleware {
 // This is example of middleware without utility functions that does something
 // both before and after request has been sent.
 func trace(next c.Handler) c.Handler {
-	return c.HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+	return c.HandlerFunc(func(req *http.Request) (resp *http.Response, err error) {
 		// do anything before request
 		fmt.Println("*** Before sending request.")
 
 		// call next middleware
-		resp, err = next.Handle(ctx, req)
+		resp, err = next.Handle(req)
 
 		// do anything after request
 		fmt.Println("*** After sending request.")
@@ -117,8 +116,7 @@ func trace(next c.Handler) c.Handler {
 // sender does actual request sending using htt.Client.
 // this is final handler that has to be called and it has to be passed to
 // chain Exec method.
-func sender(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
-	req = req.WithContext(ctx)
+func sender(req *http.Request) (resp *http.Response, err error) {
 	return http.DefaultClient.Do(req)
 }
 
@@ -136,7 +134,7 @@ func Example() {
 	// other way to add middlewares is by using Use* method
 	chain.UseFunc(trace)
 	// execute chain and final middleware
-	_, err := chain.Exec(c.HandlerFunc(sender)).Handle(context.Background(), c.EmptyRequest())
+	_, err := chain.Exec(c.HandlerFunc(sender)).Handle(c.EmptyRequest())
 	if err != nil {
 		panic(err)
 	}

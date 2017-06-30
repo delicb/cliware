@@ -1,7 +1,6 @@
 package cliware_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -17,13 +16,13 @@ func basicAuth(username, password string) c.Middleware {
 	})
 }
 
-func nilHandler(ctx context.Context, req *http.Request) (*http.Response, error) {
+func nilHandler(req *http.Request) (*http.Response, error) {
 	return nil, nil
 }
 
 func ExampleRequestProcessor() {
 	req := c.EmptyRequest()
-	_, err := basicAuth("user", "pass").Exec(c.HandlerFunc(nilHandler)).Handle(context.TODO(), req)
+	_, err := basicAuth("user", "pass").Exec(c.HandlerFunc(nilHandler)).Handle(req)
 	if err != nil {
 		panic(err)
 	}

@@ -19,15 +19,15 @@ type Handler interface {
 	// However, if handler really performs HTTP request (as opposed to doing
 	// some middleware work, like logging or similar), provided context SHOULD
 	// be used on request as intended by http.Request.WithRequest method.
-	Handle(ctx context.Context, req *http.Request) (resp *http.Response, err error)
+	Handle(req *http.Request) (resp *http.Response, err error)
 }
 
 // HandlerFunc is function variant of RequestHandler interface.
-type HandlerFunc func(ctx context.Context, req *http.Request) (resp *http.Response, err error)
+type HandlerFunc func(req *http.Request) (resp *http.Response, err error)
 
 // Handle is implementation of RequestHandler interface
-func (rhf HandlerFunc) Handle(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
-	return rhf(ctx, req)
+func (rhf HandlerFunc) Handle(req *http.Request) (resp *http.Response, err error) {
+	return rhf(req)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,13 +61,13 @@ type RequestProcessor func(req *http.Request) error
 
 // Exec is implementation of Middleware interface.
 func (rp RequestProcessor) Exec(handler Handler) Handler {
-	return HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
+	return HandlerFunc(func(req *http.Request) (resp *http.Response, err error) {
 		err = rp(req)
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err = handler.Handle(ctx, req)
+		resp, err = handler.Handle(req)
 		return resp, err
 	})
 }
@@ -85,8 +85,8 @@ type ResponseProcessor func(resp *http.Response, err error) error
 
 // Exec is implementation of Middleware interface.
 func (rp ResponseProcessor) Exec(handler Handler) Handler {
-	return HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
-		resp, err = handler.Handle(ctx, req)
+	return HandlerFunc(func(req *http.Request) (resp *http.Response, err error) {
+		resp, err = handler.Handle(req)
 		newErr := rp(resp, err)
 		if newErr != nil {
 			return resp, newErr
@@ -102,9 +102,10 @@ type ContextProcessor func(ctx context.Context) context.Context
 
 // Exec is implementation of Middleware interface.
 func (cp ContextProcessor) Exec(handler Handler) Handler {
-	return HandlerFunc(func(ctx context.Context, req *http.Request) (resp *http.Response, err error) {
-		ctx = cp(ctx)
-		return handler.Handle(ctx, req)
+	return HandlerFunc(func(req *http.Request) (resp *http.Response, err error) {
+		ctx := cp(req.Context())
+		req = req.WithContext(ctx)
+		return handler.Handle(req)
 	})
 }
 

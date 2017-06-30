@@ -17,7 +17,7 @@ func TestRequestHandlerFunc(t *testing.T) {
 		return nil, nil
 	}
 	var handler c.Handler = c.HandlerFunc(handlerFunc)
-	_, err := handler.Handle(nil, nil)
+	_, err := handler.Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -93,7 +93,7 @@ func TestUseRequest(t *testing.T) {
 		return nil
 	})
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, templateReq)
+	_, err := chain.Exec(handler).Handle(context.TODO(), templateReq)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -116,7 +116,7 @@ func TestUseResponse(t *testing.T) {
 		return nil
 	})
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -133,7 +133,7 @@ func TestMiddlewareCalled(t *testing.T) {
 	m2, m2Called := createMiddleware()
 	handler, handlerCalled := createHandler()
 	chain := c.NewChain(m1, m2)
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -155,7 +155,7 @@ func TestMiddlewareCalledWithParent(t *testing.T) {
 
 	chain := c.NewChain(m1)
 	childChain := chain.ChildChain(m2)
-	_, err := childChain.Exec(handler).Handle(nil, nil)
+	_, err := childChain.Exec(handler).Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -186,7 +186,7 @@ func TestRequestProcessorNoError(t *testing.T) {
 	})
 	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -207,7 +207,7 @@ func TestRequestProcessorWithError(t *testing.T) {
 	})
 	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != myErr {
 		t.Errorf("Expected error: \"%s\", got: \"%s\"", myErr, err)
 	}
@@ -227,7 +227,7 @@ func TestResponseProcessorNoError(t *testing.T) {
 	})
 	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}
@@ -248,7 +248,7 @@ func TestResponseProcessorWithError(t *testing.T) {
 	})
 	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != myErr {
 		t.Errorf("Expected error: \"%s\", got: \"%s\"", myErr, err)
 	}
@@ -268,7 +268,7 @@ func TestContextProcessor_Exec(t *testing.T) {
 	})
 	chain := c.NewChain(processor)
 	handler, handlerCalled := createHandler()
-	_, err := chain.Exec(handler).Handle(nil, nil)
+	_, err := chain.Exec(handler).Handle(context.TODO(), nil)
 	if err != nil {
 		t.Error("Handle returned error: ", err)
 	}

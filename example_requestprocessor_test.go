@@ -23,7 +23,10 @@ func nilHandler(ctx context.Context, req *http.Request) (*http.Response, error) 
 
 func ExampleRequestProcessor() {
 	req := c.EmptyRequest()
-	basicAuth("user", "pass").Exec(c.HandlerFunc(nilHandler)).Handle(nil, req)
+	_, err := basicAuth("user", "pass").Exec(c.HandlerFunc(nilHandler)).Handle(context.TODO(), req)
+	if err != nil {
+		panic(err)
+	}
 	username, password, ok := req.BasicAuth()
 	fmt.Println(ok)
 	fmt.Println(username)

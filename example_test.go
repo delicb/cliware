@@ -24,12 +24,23 @@ func startServer() {
 		fmt.Println("Custom-Header: ", r.Header.Get("X-Custom-Header"))
 
 		// dump body to stdout
-		io.Copy(os.Stdout, r.Body)
-		defer r.Body.Close()
+		_, err := io.Copy(os.Stdout, r.Body)
+		if err != nil {
+			panic(err)
+		}
+		defer func() {
+			err := r.Body.Close()
+			if err != nil {
+				panic(err)
+			}
+		}()
 
 		// return some response
 		w.WriteHeader(200)
-		w.Write([]byte("My shiny server response"))
+		_, err = w.Write([]byte("My shiny server response"))
+		if err != nil {
+			panic(err)
+		}
 	}))
 }
 
@@ -71,7 +82,12 @@ func bodyToStdout() c.Middleware {
 			log.Println("Got error:", err)
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() {
+			err := resp.Body.Close()
+			if err != nil {
+				panic(err)
+			}
+		}()
 		fmt.Println()
 		fmt.Println("Got response:")
 		_, err = io.Copy(os.Stdout, resp.Body)
@@ -120,7 +136,10 @@ func Example() {
 	// other way to add middlewares is by using Use* method
 	chain.UseFunc(trace)
 	// execute chain and final middleware
-	chain.Exec(c.HandlerFunc(sender)).Handle(context.Background(), c.EmptyRequest())
+	_, err := chain.Exec(c.HandlerFunc(sender)).Handle(context.Background(), c.EmptyRequest())
+	if err != nil {
+		panic(err)
+	}
 	// Output:
 	// *** Before sending request.
 	// User-Agent:  Cliware

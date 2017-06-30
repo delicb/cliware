@@ -61,6 +61,6 @@ func notFoundResponse(ctx context.Context, req *http.Request) (*http.Response, e
 }
 
 func ExampleResponseProcessor() {
-	_, err := statusCodeToError().Exec(c.HandlerFunc(notFoundResponse)).Handle(nil, nil)
+	_, err := statusCodeToError().Exec(c.HandlerFunc(notFoundResponse)).Handle(context.TODO(), nil)
 	fmt.Println(err)
 }
